@@ -159,38 +159,43 @@ static FILE *proc_net_dev;
 /* End of Variables Declarations */
 
 /* max speed in graph */
-#define GRAPHSINGLE_WIDTH 77
+#define GRAPHSINGLE_WIDTH 66
 #define GRAPHSINGLE_HEIGHT 10
 
 /* define graph height for split screen graphs */
-#define GRAPHSPLIT_HEIGHT 6
-#define GRAPHSPLIT_WIDTH 77
+#define GRAPHSPLIT_HEIGHT 7
+#define GRAPHSPLIT_WIDTH 66
 
-#define GRAPHCOMBINED_WIDTH 77
-#define GRAPHCOMBINED_HEIGHT 12
+#define GRAPHCOMBINED_WIDTH 66
+#define GRAPHCOMBINED_HEIGHT 14
 
 /* new max height */
 #define GRAPH_HEIGHT 12
-#define GRAPH_WIDTH 77
+#define GRAPH_WIDTH 66
 
 /* large split mode graph height */
-#define GRAPHLARGE_HEIGHT 11
+#define GRAPHLARGE_HEIGHT 10
 
 /* rx is higher than need as we use it for the combined view */
 int rx_graph[GRAPHSPLIT_WIDTH][GRAPHCOMBINED_HEIGHT];
 float rx_speedarray[GRAPHSPLIT_WIDTH];
 static float rx_maxspeed;
+static float rx_minspeed;
 static int rx_maxspeedpos;
+static int rx_minspeedpos;
 int rx_overallmax;
 
 int tx_graph[GRAPHSPLIT_WIDTH][GRAPHCOMBINED_HEIGHT];
 float tx_speedarray[GRAPHSPLIT_WIDTH];
 static float tx_maxspeed;
+static float tx_minspeed;
 static int tx_maxspeedpos;
+static int tx_minspeedpos;
 int tx_overallmax;
 
 /* combined view */
 static float comb_maxspeed;
+static float comb_minspeed;
 int comb_overallmax;
 int solcount;
 

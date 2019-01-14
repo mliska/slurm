@@ -125,6 +125,29 @@ void get_time(void)
 
 /******************************************************************************
  *
+ * mvprintw_speed_scaled()
+ *
+ * uptime stats struct with current time
+ *
+ *****************************************************************************/
+
+void mvprintw_speed_scaled(float speed, int y, int x)
+{
+    char draw[DRAWLEN + 1];     /* what we draw on the screen */
+
+    if ((speed / (1024 * 1024) * 8) >= 1000) {
+        snprintf(draw, DRAWLEN - 1, "%.2f Gb/s", speed / (1024 * 1024 * 1024) * 8);
+    } else if ((speed / 1024 * 8) >= 1000) {
+        snprintf(draw, DRAWLEN - 1, "%.2f Mb/s", speed / (1024 * 1024) * 8);
+    } else {
+        snprintf(draw, DRAWLEN - 1, "%.2f Kb/s", speed / 1024 * 8);
+    }
+    mvprintw(y, x - 11, "           ");
+    mvprintw(y, x - strlen(draw), "%s", draw);
+}
+
+/******************************************************************************
+ *
  * update_info()
  *
  * update the statistics and pay attention to buffer overruns while we are
@@ -143,22 +166,22 @@ void update_info(int displaymode)
         snprintf(draw, DRAWLEN - 1, "%lu",
                  stats.rx_packets - stats.rx_packets_off);
         strncat(draw, "               ", DRAWLEN - strlen(draw));
-        mvprintw(20, 24, "%s", draw);
+        mvprintw(21, 24, "%s", draw);
 
         snprintf(draw, DRAWLEN - 1, "%lu",
                  stats.tx_packets - stats.tx_packets_off);
         strncat(draw, "               ", DRAWLEN - strlen(draw));
-        mvprintw(20, 65, "%s", draw);
+        mvprintw(21, 65, "%s", draw);
 
         snprintf(draw, DRAWLEN - 1, "%lu",
                  stats.rx_errors - stats.rx_errors_off);
         strncat(draw, "               ", DRAWLEN - strlen(draw));
-        mvprintw(22, 24, "%s", draw);
+        mvprintw(23, 24, "%s", draw);
 
         snprintf(draw, DRAWLEN - 1, "%lu",
                  stats.tx_errors - stats.tx_errors_off);
         strncat(draw, "               ", DRAWLEN - strlen(draw));
-        mvprintw(22, 65, "%s", draw);
+        mvprintw(23, 65, "%s", draw);
 
         switch (data_type) {
         case TYPE_MEGA:
@@ -168,7 +191,7 @@ void update_info(int displaymode)
                                                     stats.rx_bytes_off) /
                      1048570);
             strncat(draw, "               ", DRAWLEN - strlen(draw));
-            mvprintw(21, 24, "%s", draw);
+            mvprintw(22, 24, "%s", draw);
 
             snprintf(draw, DRAWLEN - 1, "%.3f MB", (stats.tx_bytes +
                                                     (stats.tx_over *
@@ -176,7 +199,7 @@ void update_info(int displaymode)
                                                     stats.tx_bytes_off) /
                      1048570);
             strncat(draw, "               ", DRAWLEN - strlen(draw));
-            mvprintw(21, 65, "%s", draw);
+            mvprintw(22, 65, "%s", draw);
             break;
         case TYPE_GIGA:
             snprintf(draw, DRAWLEN - 1, "%.3f GB", (stats.rx_bytes +
@@ -185,7 +208,7 @@ void update_info(int displaymode)
                                                     stats.rx_bytes_off)
                      / 1073735680);
             strncat(draw, "               ", DRAWLEN - strlen(draw));
-            mvprintw(21, 24, "%s", draw);
+            mvprintw(22, 24, "%s", draw);
 
             snprintf(draw, DRAWLEN - 1, "%.3f GB", (stats.tx_bytes +
                                                     (stats.tx_over *
@@ -193,7 +216,7 @@ void update_info(int displaymode)
                                                     stats.tx_bytes_off)
                      / 1073735680);
             strncat(draw, "               ", DRAWLEN - strlen(draw));
-            mvprintw(21, 65, "%s", draw);
+            mvprintw(22, 65, "%s", draw);
             break;
         }
     }
@@ -263,6 +286,8 @@ int update_stat_large(void)
 
     float tmp_maxspeed = 0;     /* needed for max speed calc in graph */
     int tmp_maxspeedpos = 1;    /* same here */
+    float tmp_minspeed = 0;
+    int tmp_minspeedpos = 1;
 
     char draw[DRAWLEN + 1];     /* what we draw on the screen */
 
@@ -274,8 +299,10 @@ int update_stat_large(void)
 
     if (db_status == DB_STATUS_REINIT || db_status == DB_STATUS_STARTUP) {
         rx_maxspeed = 0;
+        rx_minspeed = 107374182400;
         rx_overallmax = 0;
         tx_maxspeed = 0;
+        tx_minspeed = 107374182400;
         tx_overallmax = 0;
         /* fill the graph array with zeros */
         for (x = 0; x < GRAPH_WIDTH; x++) {
@@ -322,11 +349,11 @@ int update_stat_large(void)
     /* print current speed */
     snprintf(draw, DRAWLEN - 1, "%.2f Kb/s", (float) rxspeed / 1024 * 8);
     strncat(draw, "               ", DRAWLEN - strlen(draw));
-    mvprintw(21, 24, "%s", draw);
+    mvprintw(22, 24, "%s", draw);
 
     snprintf(draw, DRAWLEN - 1, "%.2f Kb/s", (float) txspeed / 1024 * 8);
     strncat(draw, "               ", DRAWLEN - strlen(draw));
-    mvprintw(21, 65, "%s", draw);
+    mvprintw(22, 65, "%s", draw);
 
     stats.rx_bytes_comp = stats.rx_bytes;
     stats.tx_bytes_comp = stats.tx_bytes;
@@ -349,6 +376,21 @@ int update_stat_large(void)
             tx_overallmax = txspeed;
     }
 
+    /* set new min speed for graph if reached */
+    if (rxspeed < rx_minspeed) {
+        rx_minspeed = rxspeed;
+        rx_minspeedpos = 0;
+        rx_scalechanged++;
+    }
+
+    /* set new min speed for graph if reached */
+    if (txspeed < tx_minspeed) {
+        tx_minspeed = txspeed;
+        tx_minspeedpos = 0;
+        tx_scalechanged++;
+    }
+
+
     /*
      * update the Graph Top Speed field
      * as it might be shorter than before just be sure to not leave
@@ -359,19 +401,21 @@ int update_stat_large(void)
         snprintf(draw, DRAWLEN - 1, "%.2f Kb/s",
                  (float) rx_maxspeed / 1024 * 8);
         strncat(draw, "               ", DRAWLEN - strlen(draw));
-        mvprintw(22, 24, "%s", draw);
+        mvprintw(23, 24, "%s", draw);
     }
     if (tx_scalechanged) {
         snprintf(draw, DRAWLEN - 1, "%.2f Kb/s",
                  (float) tx_maxspeed / 1024 * 8);
         strncat(draw, "               ", DRAWLEN - strlen(draw));
-        mvprintw(22, 65, "%s", draw);
+        mvprintw(23, 65, "%s", draw);
     }
 
 
     /* increment position of max speed as we move the graph */
     rx_maxspeedpos++;
     tx_maxspeedpos++;
+    rx_minspeedpos++;
+    tx_minspeedpos++;
 
     /* check if max speed has to be lowered for the graph as the max speed
      * was reached too long ago
@@ -407,6 +451,35 @@ int update_stat_large(void)
         tx_maxspeedpos = tmp_maxspeedpos;
     }
 
+    tmp_minspeed = 0;
+    tmp_minspeedpos = 1;
+    if (rx_minspeedpos >= GRAPHCOMBINED_WIDTH) {
+        /* max speed calculation has to be redone */
+        for (i = 0; i < GRAPHCOMBINED_WIDTH; i++) {
+            if (rx_speedarray[i] < tmp_minspeed) {
+                tmp_minspeed = rx_speedarray[1];
+                tmp_minspeedpos = i;
+            }
+        }
+        /* set new values */
+        rx_minspeed = tmp_minspeed;
+        rx_minspeedpos = tmp_minspeedpos;
+    }
+
+    tmp_minspeed = 0;
+    tmp_minspeedpos = 1;
+    if (tx_minspeedpos >= GRAPHCOMBINED_WIDTH) {
+        /* max speed calculation has to be redone */
+        for (i = 0; i < GRAPHCOMBINED_WIDTH; i++) {
+            if (tx_speedarray[i] < tmp_minspeed) {
+                tmp_minspeed = tx_speedarray[1];
+                tmp_minspeedpos = i;
+            }
+        }
+        /* set new values */
+        tx_minspeed = tmp_minspeed;
+        rx_minspeedpos = tmp_minspeedpos;
+    }
     /* prepare the graph array
      *
      * shift the graph to the left and then add the last entry
@@ -470,6 +543,10 @@ int update_stat_large(void)
             if (rx_speedarray[x] != 0)
                 rx_graph[x][1] = 1;
         }
+
+        /* Update the graph y axis */
+        mvprintw_speed_scaled(rx_maxspeed, 11 - GRAPHLARGE_HEIGHT + 1, 12);
+        mvprintw_speed_scaled(rx_minspeed, 11, 12);
     }
     if (tx_scalechanged) {
         /* for each line rewrite the graph */
@@ -485,6 +562,10 @@ int update_stat_large(void)
             if (tx_speedarray[x] != 0)
                 tx_graph[x][1] = 1;
         }
+
+        /* Update the graph y axis */
+        mvprintw_speed_scaled(tx_maxspeed, 10 + GRAPHLARGE_HEIGHT - 1 , 12);
+        mvprintw_speed_scaled(tx_minspeed, 10, 12);
     }
 
 
@@ -501,17 +582,17 @@ int update_stat_large(void)
                     ((unsigned long) (t.rx_attrib ==
                                       COL_BOLD) ? A_BOLD : A_NORMAL));
             if (rx_graph[x][y] == 1) {
-                mvprintw(11 - y, x + 1, SYMBOL_TRAFFIC);
+                mvprintw(11 - y, x + 13, SYMBOL_TRAFFIC);
             } else
-                mvprintw(11 - y, x + 1, SYMBOL_NOTRAFFIC);
+                mvprintw(11 - y, x + 13, SYMBOL_NOTRAFFIC);
             /* TX graph */
             attrset(COLOR_PAIR(PAIR_TX) |
                     ((unsigned long) (t.tx_attrib ==
                                       COL_BOLD) ? A_BOLD : A_NORMAL));
             if (tx_graph[x][y] == 1) {
-                mvprintw(10 + y, x + 1, SYMBOL_TRAFFIC);
+                mvprintw(10 + y, x + 13, SYMBOL_TRAFFIC);
             } else
-                mvprintw(10 + y, x + 1, SYMBOL_NOTRAFFIC);
+                mvprintw(10 + y, x + 13, SYMBOL_NOTRAFFIC);
         }
     }
     return 0;
@@ -537,6 +618,8 @@ int update_stat_split(void)
 
     float tmp_maxspeed = 0;     /* needed for max speed calc in graph */
     int tmp_maxspeedpos = 1;    /* same here */
+    float tmp_minspeed = 0;
+    int tmp_minspeedpos = 1;
 
     char draw[DRAWLEN + 1];     /* what we draw on the screen */
 
@@ -548,8 +631,10 @@ int update_stat_split(void)
 
     if (db_status != DB_STATUS_RUNNING) {
         rx_maxspeed = 0;
+        rx_minspeed = 107374182400;
         rx_overallmax = 0;
         tx_maxspeed = 0;
+        tx_minspeed = 107374182400;
         tx_overallmax = 0;
         /* fill the graph array with zeros */
         for (x = 0; x < GRAPH_WIDTH; x++) {
@@ -604,10 +689,10 @@ int update_stat_split(void)
                               COL_BOLD) ? A_BOLD : A_NORMAL));
     snprintf(draw, DRAWLEN - 1, "%.2f Kb/s    ", rxspeed / 1024 * 8);
     strncat(draw, "               ", DRAWLEN - strlen(draw));
-    mvprintw(17, 24, "%s", draw);
+    mvprintw(18, 24, "%s", draw);
     snprintf(draw, DRAWLEN - 1, "%.2f Kb/s    ", txspeed / 1024 * 8);
     strncat(draw, "               ", DRAWLEN - strlen(draw));
-    mvprintw(17, 65, "%s", draw);
+    mvprintw(18, 65, "%s", draw);
 
     stats.rx_bytes_comp = stats.rx_bytes;
     stats.tx_bytes_comp = stats.tx_bytes;
@@ -622,7 +707,7 @@ int update_stat_split(void)
             snprintf(draw, DRAWLEN - 1, "%.2f Kb/s",
                      (float) rxspeed / 1024 * 8);
             strncat(draw, "               ", DRAWLEN - strlen(draw));
-            mvprintw(19, 24, "%s", draw);
+            mvprintw(20, 24, "%s", draw);
         }
     }
 
@@ -636,9 +721,24 @@ int update_stat_split(void)
             snprintf(draw, DRAWLEN - 1, "%.2f Kb/s",
                      (float) txspeed / 1024 * 8);
             strncat(draw, "               ", DRAWLEN - strlen(draw));
-            mvprintw(19, 65, "%s", draw);
+            mvprintw(20, 65, "%s", draw);
         }
     }
+
+    /* set new min speed for graph if reached */
+    if (rxspeed < rx_minspeed) {
+        rx_minspeed = rxspeed;
+        rx_minspeedpos = 0;
+        rx_scalechanged++;
+    }
+
+    /* set new min speed for graph if reached */
+    if (txspeed < tx_minspeed) {
+        tx_minspeed = txspeed;
+        tx_minspeedpos = 0;
+        tx_scalechanged++;
+    }
+
 
     /*
      * update the Graph Top Speed field
@@ -649,18 +749,21 @@ int update_stat_split(void)
     if (rx_scalechanged) {
         snprintf(draw, DRAWLEN - 1, "%.2f Kb/s", rx_maxspeed / 1024 * 8);
         strncat(draw, "               ", DRAWLEN - strlen(draw));
-        mvprintw(18, 24, "%s", draw);
+        mvprintw(19, 24, "%s", draw);
     }
     if (tx_scalechanged) {
         snprintf(draw, DRAWLEN - 1, "%.2f Kb/s", tx_maxspeed / 1024 * 8);
         strncat(draw, "               ", DRAWLEN - strlen(draw));
-        mvprintw(18, 65, "%s", draw);
+        mvprintw(19, 65, "%s", draw);
     }
 
 
     /* increment position of max speed as we move the graph */
     rx_maxspeedpos++;
     tx_maxspeedpos++;
+    rx_minspeedpos++;
+    tx_minspeedpos++;
+
 
     /* check if max speed has to be lowered for the graph as the max speed
      * was reached too long ago
@@ -695,6 +798,37 @@ int update_stat_split(void)
         tx_maxspeed = tmp_maxspeed;
         tx_maxspeedpos = tmp_maxspeedpos;
     }
+
+    tmp_minspeed = 0;
+    tmp_minspeedpos = 1;
+    if (rx_minspeedpos >= GRAPHCOMBINED_WIDTH) {
+        /* max speed calculation has to be redone */
+        for (i = 0; i < GRAPHCOMBINED_WIDTH; i++) {
+            if (rx_speedarray[i] < tmp_minspeed) {
+                tmp_minspeed = rx_speedarray[1];
+                tmp_minspeedpos = i;
+            }
+        }
+        /* set new values */
+        rx_minspeed = tmp_minspeed;
+        rx_minspeedpos = tmp_minspeedpos;
+    }
+
+    tmp_minspeed = 0;
+    tmp_minspeedpos = 1;
+    if (tx_minspeedpos >= GRAPHCOMBINED_WIDTH) {
+        /* max speed calculation has to be redone */
+        for (i = 0; i < GRAPHCOMBINED_WIDTH; i++) {
+            if (tx_speedarray[i] < tmp_minspeed) {
+                tmp_minspeed = tx_speedarray[1];
+                tmp_minspeedpos = i;
+            }
+        }
+        /* set new values */
+        tx_minspeed = tmp_minspeed;
+        rx_minspeedpos = tmp_minspeedpos;
+    }
+
 
     /* prepare the graph array
      *
@@ -759,6 +893,10 @@ int update_stat_split(void)
             if (rx_speedarray[x] != 0)
                 rx_graph[x][1] = 1;
         }
+
+        /* Update the graph y axis */
+        mvprintw_speed_scaled(rx_maxspeed, 8 - GRAPHSPLIT_HEIGHT + 1, 12);
+        mvprintw_speed_scaled(rx_minspeed, 8, 12);
     }
     if (tx_scalechanged) {
         /* for each line rewrite the graph */
@@ -774,6 +912,10 @@ int update_stat_split(void)
             if (tx_speedarray[x] != 0)
                 tx_graph[x][1] = 1;
         }
+
+        /* Update the graph y axis */
+        mvprintw_speed_scaled(tx_maxspeed, 7 + GRAPHSPLIT_HEIGHT - 1 , 12);
+        mvprintw_speed_scaled(tx_minspeed, 7, 12);
     }
 
 
@@ -795,17 +937,17 @@ int update_stat_split(void)
                     ((unsigned long) (t.rx_attrib ==
                                       COL_BOLD) ? A_BOLD : A_NORMAL));
             if (rx_graph[x][y] == 1) {
-                mvprintw(7 - y, x + 1, SYMBOL_TRAFFIC);
+                mvprintw(8 - y, x + 13, SYMBOL_TRAFFIC);
             } else
-                mvprintw(7 - y, x + 1, SYMBOL_NOTRAFFIC);
+                mvprintw(8 - y, x + 13, SYMBOL_NOTRAFFIC);
             /* TX graph */
             attrset(COLOR_PAIR(PAIR_TX) |
                     ((unsigned long) (t.tx_attrib ==
                                       COL_BOLD) ? A_BOLD : A_NORMAL));
             if (tx_graph[x][y] == 1) {
-                mvprintw(6 + y, x + 1, SYMBOL_TRAFFIC);
+                mvprintw(7 + y, x + 13, SYMBOL_TRAFFIC);
             } else
-                mvprintw(6 + y, x + 1, SYMBOL_NOTRAFFIC);
+                mvprintw(7 + y, x + 13, SYMBOL_NOTRAFFIC);
         }
     }
     return 0;
@@ -828,6 +970,8 @@ int update_stat_combined(void)
 
     float tmp_maxspeed = 0;     /* needed for max speed calc in graph */
     int tmp_maxspeedpos = 1;    /* same here */
+    float tmp_minspeed = 0;     /* needed for max speed calc in graph */
+    int tmp_minspeedpos = 1;    /* same here */
 
     char draw[DRAWLEN + 1];     /* what we draw on the screen */
 
@@ -842,6 +986,7 @@ int update_stat_combined(void)
         rx_maxspeed = 0;
         rx_overallmax = 0;
         comb_maxspeed = 0;
+        comb_minspeed = 107374182400;
         comb_overallmax = 0;
         /* fill the graph array with zeros */
         for (x = 0; x < GRAPH_WIDTH; x++) {
@@ -890,7 +1035,7 @@ int update_stat_combined(void)
     /* print current speed */
     snprintf(draw, DRAWLEN - 1, "%.2f Kb/s", sumspeed / 1024 * 8);
     strncat(draw, "               ", DRAWLEN - strlen(draw));
-    mvprintw(18, 24, "%s", draw);
+    mvprintw(19, 24, "%s", draw);
 
     stats.rx_bytes_comp = stats.rx_bytes;
     stats.tx_bytes_comp = stats.tx_bytes;
@@ -905,8 +1050,14 @@ int update_stat_combined(void)
             snprintf(draw, DRAWLEN - 1, "%.2f Kb/s",
                      (float) sumspeed / 1024 * 8);
             strncat(draw, "               ", DRAWLEN - strlen(draw));
-            mvprintw(19, 65, "%s", draw);
+            mvprintw(20, 65, "%s", draw);
         }
+    }
+    /* set new min speed for graph if reached */
+    if (sumspeed < comb_minspeed) {
+        comb_minspeed = sumspeed;
+        rx_minspeedpos = 0;
+        rx_scalechanged++;
     }
 
     /*
@@ -918,18 +1069,21 @@ int update_stat_combined(void)
     if (rx_scalechanged) {
         snprintf(draw, DRAWLEN - 1, "%.2f Kb/s", comb_maxspeed / 1024 * 8);
         strncat(draw, "               ", DRAWLEN - strlen(draw));
-        mvprintw(19, 24, "%s", draw);
+        mvprintw(20, 24, "%s", draw);
     }
 
     /* increment position of max speed as we move the graph */
     rx_maxspeedpos++;
+    rx_minspeedpos++;
 
-    /* check if max speed has to be lowered for the graph as the max speed
+    /* check if max and min speed has to be lowered for the graph as the max speed
      * was reached too long ago
      */
 
     tmp_maxspeed = 0;
     tmp_maxspeedpos = 1;
+    tmp_minspeed = 0;
+    tmp_minspeedpos = 1;
     if (rx_maxspeedpos >= GRAPHCOMBINED_WIDTH) {
         /* max speed calculation has to be redone */
         for (i = 0; i < GRAPHCOMBINED_WIDTH; i++) {
@@ -942,6 +1096,19 @@ int update_stat_combined(void)
         comb_maxspeed = tmp_maxspeed;
         rx_maxspeedpos = tmp_maxspeedpos;
     }
+    if (rx_minspeedpos >= GRAPHCOMBINED_WIDTH) {
+        /* max speed calculation has to be redone */
+        for (i = 0; i < GRAPHCOMBINED_WIDTH; i++) {
+            if (rx_speedarray[i] < tmp_minspeed) {
+                tmp_minspeed = rx_speedarray[1];
+                tmp_minspeedpos = i;
+            }
+        }
+        /* set new values */
+        comb_minspeed = tmp_minspeed;
+        rx_minspeedpos = tmp_minspeedpos;
+    }
+
 
     /* prepare the graph array
      *
@@ -1000,6 +1167,10 @@ int update_stat_combined(void)
             if (rx_speedarray[x] != 0)
                 rx_graph[x][1] = 1;
         }
+
+        /* Update the graph y axis */
+        mvprintw_speed_scaled(comb_maxspeed, 15 - GRAPHCOMBINED_HEIGHT + 1, 12);
+        mvprintw_speed_scaled(comb_minspeed, 14, 12);
     }
 
     /*
@@ -1015,9 +1186,9 @@ int update_stat_combined(void)
                     ((unsigned long) (t.rx_attrib ==
                                       COL_BOLD) ? A_BOLD : A_NORMAL));
             if (rx_graph[x][y] == 1) {
-                mvprintw(13 - y, x + 1, SYMBOL_TRAFFIC);
+                mvprintw(15 - y, x + 13, SYMBOL_TRAFFIC);
             } else
-                mvprintw(13 - y, x + 1, SYMBOL_NOTRAFFIC);
+                mvprintw(15 - y, x + 13, SYMBOL_NOTRAFFIC);
         }
     }
     return 0;
@@ -1061,6 +1232,7 @@ void usage(int code, char **argv)
 void draw_face(int displaymode, char *hostname)
 {
     int x, y;
+    char draw[DRAWLEN + 1];
 
     attrset(COLOR_PAIR(PAIR_TEXT) |
             ((unsigned long) (t.text_attrib ==
@@ -1072,57 +1244,57 @@ void draw_face(int displaymode, char *hostname)
     }
     refresh();
     if (displaymode != MODE_LARGE) {
-        mvprintw(20, 6, "Received Packets:");
-        mvprintw(22, 3, "Errors on Receiving:");
-        mvprintw(20, 44, "Transmitted Packets:");
+        mvprintw(21, 6, "Received Packets:");
+        mvprintw(23, 3, "Errors on Receiving:");
+        mvprintw(21, 44, "Transmitted Packets:");
         switch (data_type) {
         case TYPE_MEGA:
-            mvprintw(21, 7, "MBytes Received:");
-            mvprintw(21, 45, "MBytes Transmitted:");
+            mvprintw(22, 7, "MBytes Received:");
+            mvprintw(22, 45, "MBytes Transmitted:");
             break;
         case TYPE_GIGA:
-            mvprintw(21, 7, "GBytes Received:");
-            mvprintw(21, 45, "GBytes Transmitted:");
+            mvprintw(22, 7, "GBytes Received:");
+            mvprintw(22, 45, "GBytes Transmitted:");
             break;
         }
     }
 
     if (displaymode == MODE_SPLIT) {
-        mvprintw(22, 41, "Errors on Transmission:");
+        mvprintw(23, 41, "Errors on Transmission:");
 #ifdef WITH_LED
         if (ledenabled) {
             mvprintw(14, 37, "RX");
             mvprintw(14, 41, "TX");
         }
 #endif
-        mvprintw(17, 6, "Current RX Speed:");
-        mvprintw(19, 2, "Overall Top RX Speed:");
-        mvprintw(18, 4, "Graph Top RX Speed:");
-        mvprintw(17, 47, "Current TX Speed:");
-        mvprintw(19, 43, "Overall Top TX Speed:");
-        mvprintw(18, 45, "Graph Top TX Speed:");
-        mvprintw(15, 6, "Active Interface:");
-        mvprintw(15, 48, "Interface Speed:");
+        mvprintw(18, 6, "Current RX Speed:");
+        mvprintw(20, 2, "Overall Top RX Speed:");
+        mvprintw(19, 4, "Graph Top RX Speed:");
+        mvprintw(18, 47, "Current TX Speed:");
+        mvprintw(20, 43, "Overall Top TX Speed:");
+        mvprintw(19, 45, "Graph Top TX Speed:");
+        mvprintw(16, 6, "Active Interface:");
+        mvprintw(16, 48, "Interface Speed:");
     } else if (displaymode == MODE_COMBINED) {
-        mvprintw(22, 41, "Errors on Transmission:");
+        mvprintw(23, 41, "Errors on Transmission:");
 #ifdef WITH_LED
         if (ledenabled) {
-            mvprintw(14, 37, "RX");
-            mvprintw(14, 41, "TX");
+            mvprintw(16, 37, "RX");
+            mvprintw(16, 41, "TX");
         }
 #endif
 
-        mvprintw(18, 9, "Current Speed:");
-        mvprintw(19, 46, "Overall Top Speed:");
-        mvprintw(19, 7, "Graph Top Speed:");
-        mvprintw(16, 6, "Active Interface:");
-        mvprintw(16, 48, "Interface Speed:");
+        mvprintw(19, 9, "Current Speed:");
+        mvprintw(20, 46, "Overall Top Speed:");
+        mvprintw(20, 7, "Graph Top Speed:");
+        mvprintw(17, 6, "Active Interface:");
+        mvprintw(17, 48, "Interface Speed:");
     } else {
         /* large split mode */
-        mvprintw(21, 6, "Current RX Speed:");
-        mvprintw(21, 47, "Current TX Speed:");
-        mvprintw(22, 4, "Graph Top RX Speed:");
-        mvprintw(22, 45, "Graph Top TX Speed:");
+        mvprintw(22, 6, "Current RX Speed:");
+        mvprintw(22, 47, "Current TX Speed:");
+        mvprintw(23, 4, "Graph Top RX Speed:");
+        mvprintw(23, 45, "Graph Top TX Speed:");
 
     }
     attrset(COLOR_PAIR(PAIR_TITLE) |
@@ -1135,12 +1307,28 @@ void draw_face(int displaymode, char *hostname)
     attrset(COLOR_PAIR(PAIR_VAR) |
             ((unsigned long) (t.var_attrib ==
                               COL_BOLD) ? A_BOLD : A_NORMAL));
-    if (displaymode == MODE_SPLIT) {
-        mvprintw(15, 24, "%s", ifdata.if_name);
-        mvprintw(15, 65, "%s", (char *) ifdata.if_speedstring);
-    } else if (displaymode == MODE_COMBINED) {
+    if (displaymode == MODE_LARGE) {
+        mvprintw(20, 13, "%d", refreshdelay);
+        snprintf(draw, DRAWLEN - 1, "%d", (int) (refreshdelay * GRAPH_WIDTH) / 2);
+        mvprintw(20, 45 - (int) ( strlen(draw) / 2 ), "%s", draw);
+        snprintf(draw, DRAWLEN - 1, "%d", refreshdelay * GRAPH_WIDTH);
+        mvprintw(20, 79 - strlen(draw), "%s", draw);
+    } else if (displaymode == MODE_SPLIT) {
+        mvprintw(14, 13, "%d", refreshdelay);
+        snprintf(draw, DRAWLEN - 1, "%d", (int) (refreshdelay * GRAPH_WIDTH) / 2);
+        mvprintw(14, 45 - (int) ( strlen(draw) / 2 ), "%s", draw);
+        snprintf(draw, DRAWLEN - 1, "%d", refreshdelay * GRAPH_WIDTH);
+        mvprintw(14, 79 - strlen(draw), "%s", draw);
         mvprintw(16, 24, "%s", ifdata.if_name);
         mvprintw(16, 65, "%s", (char *) ifdata.if_speedstring);
+    } else if (displaymode == MODE_COMBINED) {
+        mvprintw(15, 13, "%d", refreshdelay);
+        snprintf(draw, DRAWLEN - 1, "%d", (int) (refreshdelay * GRAPH_WIDTH) / 2);
+        mvprintw(15, 45 - (int) ( strlen(draw) / 2 ), "%s", draw);
+        snprintf(draw, DRAWLEN - 1, "%d", refreshdelay * GRAPH_WIDTH);
+        mvprintw(15, 79 - strlen(draw), "%s", draw);
+        mvprintw(17, 24, "%s", ifdata.if_name);
+        mvprintw(17, 65, "%s", (char *) ifdata.if_speedstring);
     }
     refresh();
 }
