@@ -7,15 +7,11 @@
  * I ripped of the ppp dependend parts and the email checks to turn in into
  * a generic network load monitor running on all common Unices.
  *
- *  author: Hendrik Scholz, Matthias Schmitz
- * website: https://www.github.com/mattthias/slurm
+ *  author: Milos Liska, Hendrik Scholz, Matthias Schmitz
+ * website: https://www.github.com/mliska/slurm
  *
  * As pppstatus is licensed under the GPL, slurm is too. See the following
  * paragraphs for information about pppstatus and the license.
- *
- *****************************************************************************
- * $Id: slurm.c,v 1.86 2004/10/12 19:44:36 hscholz Exp $
- *****************************************************************************
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1204,7 +1200,7 @@ int update_stat_combined(void)
 
 void usage(int code, char **argv)
 {
-    fprintf(stderr, "slurm %s - https://github.com/mattthias/slurm\n\n"
+    fprintf(stderr, "slurm %s - https://github.com/mliska/slurm\n\n"
             "usage: %s [-hHz] [-csl] [-d delay] [-t theme] -i interface\n\n",
             PACKAGE_VERSION, argv[0]);
     fprintf(stderr, "    -h            print help\n"
@@ -1455,7 +1451,7 @@ int main(int argc, char *argv[])
     if (!validinterface) {
         fprintf(stderr, "specified device does not exist or cannot "
                 "be monitored!\n\nIf you think this is an error please report "
-                "it to https://github.com/mattthias/slurm/issues . Thanks!\n");
+                "it to https://github.com/mliska/slurm/issues . Thanks!\n");
         exit(1);
     }
 
@@ -1746,8 +1742,7 @@ void slurm_shutdown(int sig)
     endwin();
     system("clear");
     curs_set(1);
-    fprintf(stdout, "slurm %s  - "
-            "http://www.github.com/mattthias/slurm/\n", VERSION);
+    fprintf(stdout, "slurm %s\n",  VERSION);
 
     /* close dev if running Linux */
 #ifdef __linux__

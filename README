@@ -46,7 +46,7 @@ or on CentOS / RedHat
         slurm -i eth0 # or whatever your interface is
 
 Please report bugs and feature requests in the github bugtracker:
- website: https://github.com/mattthias/slurm
+ website: https://github.com/mliska/slurm
 
 License:
  As pppstatus is licensed under the GPL, slurm is too.
