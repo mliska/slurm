@@ -1,3 +1,14 @@
+2019-01-14 Milos Liska <mliska@gmail.com>
+	* tag version 0.5.0
+	* Added iface speed detection on Linux
+	* Use bits per second instead of bytes per second
+	* Better usage of the 80x25 default terminal real estate
+	* Added speed and time axes labels to the graph
+	* Fixed graph width rendering (no more artefacts in the last column)
+	* Use different default SYMBOL_TRAFFIC and SYMBOL_NONTRAFFIC (based on bmon)
+	* Fixed colors rendering if SYMBOL_NONTRAFFIC is not set to space
+	* Updated manpage
+
 2015-08-16 Matthias Schmitz <matthias@sigxcpu.org>
 	* tag version 0.4.3
 	* switch to cmake as build system
