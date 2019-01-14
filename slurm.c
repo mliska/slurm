@@ -633,8 +633,8 @@ int update_stat_split(void)
         tx_scalechanged++;
         if (txspeed > tx_overallmax) {
             tx_overallmax = txspeed;
-            snprintf(draw, DRAWLEN - 1, "%.2f KB/s",
-                     (float) txspeed / 1024);
+            snprintf(draw, DRAWLEN - 1, "%.2f Kb/s",
+                     (float) txspeed / 1024 * 8);
             strncat(draw, "               ", DRAWLEN - strlen(draw));
             mvprintw(19, 65, "%s", draw);
         }
