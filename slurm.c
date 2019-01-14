@@ -497,18 +497,18 @@ int update_stat_large(void)
     for (y = GRAPHLARGE_HEIGHT - 1; y > 0; y--) {
         for (x = 0; x < GRAPH_WIDTH; x++) {
             /* RX graph */
+            attrset(COLOR_PAIR(PAIR_RX) |
+                    ((unsigned long) (t.rx_attrib ==
+                                      COL_BOLD) ? A_BOLD : A_NORMAL));
             if (rx_graph[x][y] == 1) {
-                attrset(COLOR_PAIR(PAIR_RX) |
-                        ((unsigned long) (t.rx_attrib ==
-                                          COL_BOLD) ? A_BOLD : A_NORMAL));
                 mvprintw(11 - y, x + 1, SYMBOL_TRAFFIC);
             } else
                 mvprintw(11 - y, x + 1, SYMBOL_NOTRAFFIC);
             /* TX graph */
+            attrset(COLOR_PAIR(PAIR_TX) |
+                    ((unsigned long) (t.tx_attrib ==
+                                      COL_BOLD) ? A_BOLD : A_NORMAL));
             if (tx_graph[x][y] == 1) {
-                attrset(COLOR_PAIR(PAIR_TX) |
-                        ((unsigned long) (t.tx_attrib ==
-                                          COL_BOLD) ? A_BOLD : A_NORMAL));
                 mvprintw(10 + y, x + 1, SYMBOL_TRAFFIC);
             } else
                 mvprintw(10 + y, x + 1, SYMBOL_NOTRAFFIC);
@@ -785,19 +785,24 @@ int update_stat_split(void)
 
     for (y = GRAPHSPLIT_HEIGHT - 1; y > 0; y--) {
         for (x = 0; x < GRAPHSPLIT_WIDTH; x++) {
+            /* If SYMBOL_NOTRAFFIC is set to something else then space, then the
+             * color/face has to be set for both SYMBOL_TRAFFIC and
+             * SYMBOL_NOTRAFFIC
+             */
+
             /* RX graph */
+            attrset(COLOR_PAIR(PAIR_RX) |
+                    ((unsigned long) (t.rx_attrib ==
+                                      COL_BOLD) ? A_BOLD : A_NORMAL));
             if (rx_graph[x][y] == 1) {
-                attrset(COLOR_PAIR(PAIR_RX) |
-                        ((unsigned long) (t.rx_attrib ==
-                                          COL_BOLD) ? A_BOLD : A_NORMAL));
                 mvprintw(7 - y, x + 1, SYMBOL_TRAFFIC);
             } else
                 mvprintw(7 - y, x + 1, SYMBOL_NOTRAFFIC);
             /* TX graph */
+            attrset(COLOR_PAIR(PAIR_TX) |
+                    ((unsigned long) (t.tx_attrib ==
+                                      COL_BOLD) ? A_BOLD : A_NORMAL));
             if (tx_graph[x][y] == 1) {
-                attrset(COLOR_PAIR(PAIR_TX) |
-                        ((unsigned long) (t.tx_attrib ==
-                                          COL_BOLD) ? A_BOLD : A_NORMAL));
                 mvprintw(6 + y, x + 1, SYMBOL_TRAFFIC);
             } else
                 mvprintw(6 + y, x + 1, SYMBOL_NOTRAFFIC);
@@ -1006,10 +1011,10 @@ int update_stat_combined(void)
     for (y = GRAPHCOMBINED_HEIGHT - 1; y > 0; y--) {
         for (x = 0; x < GRAPHCOMBINED_WIDTH; x++) {
             /* RX graph */
+            attrset(COLOR_PAIR(PAIR_RX) |
+                    ((unsigned long) (t.rx_attrib ==
+                                      COL_BOLD) ? A_BOLD : A_NORMAL));
             if (rx_graph[x][y] == 1) {
-                attrset(COLOR_PAIR(PAIR_RX) |
-                        ((unsigned long) (t.rx_attrib ==
-                                          COL_BOLD) ? A_BOLD : A_NORMAL));
                 mvprintw(13 - y, x + 1, SYMBOL_TRAFFIC);
             } else
                 mvprintw(13 - y, x + 1, SYMBOL_NOTRAFFIC);
