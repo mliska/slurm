@@ -320,11 +320,11 @@ int update_stat_large(void)
     txspeed = (stats.tx_bytes - stats.tx_bytes_comp) / refreshdelay;
 
     /* print current speed */
-    snprintf(draw, DRAWLEN - 1, "%.2f KB/s", (float) rxspeed / 1024);
+    snprintf(draw, DRAWLEN - 1, "%.2f Kb/s", (float) rxspeed / 1024 * 8);
     strncat(draw, "               ", DRAWLEN - strlen(draw));
     mvprintw(21, 24, "%s", draw);
 
-    snprintf(draw, DRAWLEN - 1, "%.2f KB/s", (float) txspeed / 1024);
+    snprintf(draw, DRAWLEN - 1, "%.2f Kb/s", (float) txspeed / 1024 * 8);
     strncat(draw, "               ", DRAWLEN - strlen(draw));
     mvprintw(21, 65, "%s", draw);
 
@@ -356,14 +356,14 @@ int update_stat_large(void)
      */
 
     if (rx_scalechanged) {
-        snprintf(draw, DRAWLEN - 1, "%.2f KB/s",
-                 (float) rx_maxspeed / 1024);
+        snprintf(draw, DRAWLEN - 1, "%.2f Kb/s",
+                 (float) rx_maxspeed / 1024 * 8);
         strncat(draw, "               ", DRAWLEN - strlen(draw));
         mvprintw(22, 24, "%s", draw);
     }
     if (tx_scalechanged) {
-        snprintf(draw, DRAWLEN - 1, "%.2f KB/s",
-                 (float) tx_maxspeed / 1024);
+        snprintf(draw, DRAWLEN - 1, "%.2f Kb/s",
+                 (float) tx_maxspeed / 1024 * 8);
         strncat(draw, "               ", DRAWLEN - strlen(draw));
         mvprintw(22, 65, "%s", draw);
     }
@@ -602,10 +602,10 @@ int update_stat_split(void)
     attrset(COLOR_PAIR(PAIR_VAR) |
             ((unsigned long) (t.var_attrib ==
                               COL_BOLD) ? A_BOLD : A_NORMAL));
-    snprintf(draw, DRAWLEN - 1, "%.2f KB/s    ", rxspeed / 1024);
+    snprintf(draw, DRAWLEN - 1, "%.2f Kb/s    ", rxspeed / 1024 * 8);
     strncat(draw, "               ", DRAWLEN - strlen(draw));
     mvprintw(17, 24, "%s", draw);
-    snprintf(draw, DRAWLEN - 1, "%.2f KB/s    ", txspeed / 1024);
+    snprintf(draw, DRAWLEN - 1, "%.2f Kb/s    ", txspeed / 1024 * 8);
     strncat(draw, "               ", DRAWLEN - strlen(draw));
     mvprintw(17, 65, "%s", draw);
 
@@ -619,8 +619,8 @@ int update_stat_split(void)
         rx_scalechanged++;
         if (rxspeed > rx_overallmax) {
             rx_overallmax = rxspeed;
-            snprintf(draw, DRAWLEN - 1, "%.2f KB/s",
-                     (float) rxspeed / 1024);
+            snprintf(draw, DRAWLEN - 1, "%.2f Kb/s",
+                     (float) rxspeed / 1024 * 8);
             strncat(draw, "               ", DRAWLEN - strlen(draw));
             mvprintw(19, 24, "%s", draw);
         }
@@ -647,12 +647,12 @@ int update_stat_split(void)
      */
 
     if (rx_scalechanged) {
-        snprintf(draw, DRAWLEN - 1, "%.2f KB/s", rx_maxspeed / 1024);
+        snprintf(draw, DRAWLEN - 1, "%.2f Kb/s", rx_maxspeed / 1024 * 8);
         strncat(draw, "               ", DRAWLEN - strlen(draw));
         mvprintw(18, 24, "%s", draw);
     }
     if (tx_scalechanged) {
-        snprintf(draw, DRAWLEN - 1, "%.2f KB/s", tx_maxspeed / 1024);
+        snprintf(draw, DRAWLEN - 1, "%.2f Kb/s", tx_maxspeed / 1024 * 8);
         strncat(draw, "               ", DRAWLEN - strlen(draw));
         mvprintw(18, 65, "%s", draw);
     }
@@ -888,7 +888,7 @@ int update_stat_combined(void)
     txspeed = (stats.tx_bytes - stats.tx_bytes_comp) / refreshdelay;
 
     /* print current speed */
-    snprintf(draw, DRAWLEN - 1, "%.2f KB/s", sumspeed / 1024);
+    snprintf(draw, DRAWLEN - 1, "%.2f Kb/s", sumspeed / 1024 * 8);
     strncat(draw, "               ", DRAWLEN - strlen(draw));
     mvprintw(18, 24, "%s", draw);
 
@@ -902,8 +902,8 @@ int update_stat_combined(void)
         rx_scalechanged++;
         if (sumspeed > comb_overallmax) {
             comb_overallmax = sumspeed;
-            snprintf(draw, DRAWLEN - 1, "%.2f KB/s",
-                     (float) sumspeed / 1024);
+            snprintf(draw, DRAWLEN - 1, "%.2f Kb/s",
+                     (float) sumspeed / 1024 * 8);
             strncat(draw, "               ", DRAWLEN - strlen(draw));
             mvprintw(19, 65, "%s", draw);
         }
@@ -916,7 +916,7 @@ int update_stat_combined(void)
      */
 
     if (rx_scalechanged) {
-        snprintf(draw, DRAWLEN - 1, "%.2f KB/s", comb_maxspeed / 1024);
+        snprintf(draw, DRAWLEN - 1, "%.2f Kb/s", comb_maxspeed / 1024 * 8);
         strncat(draw, "               ", DRAWLEN - strlen(draw));
         mvprintw(19, 24, "%s", draw);
     }
