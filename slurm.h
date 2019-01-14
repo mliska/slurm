@@ -75,11 +75,21 @@ statvline graph;
 
 /* This structure stays the INFO variables */
 typedef struct DataStats {
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
+    unsigned long long rx_packets;
+    unsigned long long rx_errors;
+#else
     unsigned long rx_packets;
     unsigned long rx_errors;
+#endif
     int rx_over;
+#if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L))
+    unsigned long long tx_packets;
+    unsigned long long tx_errors;
+#else
     unsigned long tx_packets;
     unsigned long tx_errors;
+#endif
     int tx_over;
     double rx_bytes;
     double tx_bytes;
