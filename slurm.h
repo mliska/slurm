@@ -32,8 +32,8 @@
 #define FALSE 0
 #endif
 
-#define SYMBOL_TRAFFIC		"x"
-#define SYMBOL_NOTRAFFIC	" "
+#define SYMBOL_TRAFFIC		"|"
+#define SYMBOL_NOTRAFFIC	"."
 
 #ifdef __linux__
 #define PATH_NET_DEV "/proc/net/dev"
