@@ -495,7 +495,7 @@ int update_stat_large(void)
      */
 
     for (y = GRAPHLARGE_HEIGHT - 1; y > 0; y--) {
-        for (x = 0; x <= GRAPH_WIDTH; x++) {
+        for (x = 0; x < GRAPH_WIDTH; x++) {
             /* RX graph */
             if (rx_graph[x][y] == 1) {
                 attrset(COLOR_PAIR(PAIR_RX) |
@@ -784,7 +784,7 @@ int update_stat_split(void)
      */
 
     for (y = GRAPHSPLIT_HEIGHT - 1; y > 0; y--) {
-        for (x = 0; x <= GRAPHSPLIT_WIDTH; x++) {
+        for (x = 0; x < GRAPHSPLIT_WIDTH; x++) {
             /* RX graph */
             if (rx_graph[x][y] == 1) {
                 attrset(COLOR_PAIR(PAIR_RX) |
@@ -1004,7 +1004,7 @@ int update_stat_combined(void)
      */
 
     for (y = GRAPHCOMBINED_HEIGHT - 1; y > 0; y--) {
-        for (x = 0; x <= GRAPHCOMBINED_WIDTH; x++) {
+        for (x = 0; x < GRAPHCOMBINED_WIDTH; x++) {
             /* RX graph */
             if (rx_graph[x][y] == 1) {
                 attrset(COLOR_PAIR(PAIR_RX) |
