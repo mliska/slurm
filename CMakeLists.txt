@@ -31,4 +31,4 @@ target_link_libraries(slurm ncurses)
 # install
 install(TARGETS slurm DESTINATION bin)
 install(DIRECTORY themes/ DESTINATION share/slurm PATTERN "*.theme")
-install(FILES slurm.1 DESTINATION share/man)
+install(FILES slurm.1 DESTINATION share/man/man1)
